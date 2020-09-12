@@ -1,0 +1,5 @@
+*.pyc
+pycache/
+olds/
+.ipynb_checkpoints/
+imgs/*.png
