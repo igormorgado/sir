@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os
 import json
 import random
 import numba
@@ -326,12 +327,19 @@ def test():
 
 
 def test_run(filename='data/randomwalk_test.json'):
-    data = test()
-    write(data, filename) 
-    print(f"Data written to {filename}")
+    if os.path.isfile(filename):
+        print(f"Arquivo de experimento {filename} existe. Pulando a execucao.")
+    else:
+        data = test()
+        write(data, filename) 
+        print(f"Data written to {filename}")
 
 
 def test_plot(filename='data/randomwalk_test.json'):
+    if not os.path.isfile(filename):
+        print(f"Arquivo de experimento {filename} nao existe.")
+        return
+
     # plt.rcParams["font.family"] = "Times New Roman"
     plt.rcParams["font.size"] = "10"
     plt.rcParams["text.usetex"] = True
@@ -388,7 +396,7 @@ def test_experiments():
 
 
 if __name__ == '__main__':
-    #test_run()
+    test_run()
     test_plot()
     test_experiments()
 

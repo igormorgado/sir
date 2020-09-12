@@ -273,6 +273,9 @@ def main():
     beta = c * p
     R_0 = beta/gamma
 
+    print(f"Rodando simulação com parametros:")
+    print(f"N: {N}, I_0: {I_0}, r_0: {r_0}, beta: {beta}, gamma: {gamma}")
+    print(f"T: {T}, dec: {dec}, seed: {seed}")
     exp_sto = sir_sto_simul(N, I_0, r_0, beta, gamma, T, dec, seed=0)
     exp_det = sir_det_simul(N, I_0, r_0, beta, gamma, T, exp_sto.shape[0])
 
@@ -281,7 +284,7 @@ def main():
     sir_plot(ax, exp_det, label=['S(t) det',' I(t) det', 'S(t) det'], dashed=True);
     ax.set_title(r'Comparison SIR Model (stochastic and deterministic) $\beta: {}$'.format(beta), pad=20)
     fig.tight_layout()
-    fig.savefig('sir.png', dpi=300)
+    fig.savefig('imgs/sir.png', dpi=300)
 
 
 if __name__ == '__main__':

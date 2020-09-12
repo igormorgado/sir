@@ -1,10 +1,13 @@
 Pythoh SIR Model simulation
 ===========================
 
+Only works on Python 3
 
-# randomwalk.py
+Numba must be version 0.48, otherwise it will not work.
 
-A sample random walk simulation to test stochastic optimization methods
+# TODO
+
+Fix issue with new numba versions.
 
 # sir.py
 
@@ -14,11 +17,18 @@ Module to run stocastic and deterministic sir simulations
 
 Module to graph performance data 
 
+# randomwalk.py
 
-# experiment_paper_cba.py
+A sample random walk simulation to test stochastic optimization methods
+
+To execute call:  python3 randomwalk.py
+
+
+# paper_cba.py
 
 Creates the images for the paper to CBA
 
+To execute call:  python3 paper_cba.py
 
 # Notes
 
