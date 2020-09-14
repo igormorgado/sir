@@ -129,7 +129,7 @@ def sir_sto_simul(N: int,
     
     data = [next(sir)]
 
-    if decimation == -1: decimation = int(N / 1000)
+    if (decimation == -1) and (N >= int(1e5)): decimation = int(N / 1000)
     # While there is simulation time and infecteds
     while (data[-1][0] < T) and (data[-1][2] > 0):
         for _ in range(decimation):

@@ -49,12 +49,9 @@ R_0 = beta/gamma
 seed = 0
 
 print("""
-
-
 #
 # EXPERIMENT 1: Memory footprint
 # 
-
 """)
 #
 # EXPERIMENT 1
@@ -142,12 +139,9 @@ fig.savefig(filename, dpi=300)
 
 
 print("""
-
-
 #
 # EXPERIMENT 2: Compute time
 # 
-
 """)
 # Compute time: Naive vs Optimized.
 # 
@@ -160,11 +154,13 @@ print("""
 
 runs = 5
 N_range = np.array([
+    int(1e2), int(2e2), int(3e2), int(4e2), int(5e2), int(6e2), int(7e2), int(8e2), int(9e2),
+    int(1e3), int(2e3), int(3e3), int(4e3), int(5e3), int(6e3), int(7e3), int(8e3), int(9e3),
     int(1e4), int(2e4), int(3e4), int(4e4), int(5e4), int(6e4), int(7e4), int(8e4), int(9e4),
-    # int(1e5), int(2e5), int(3e5), int(4e5), int(5e5), int(6e5), int(7e5), int(8e5), int(9e5),
-    # int(1e6), int(2e6), int(3e6), int(4e6), int(5e6), int(6e6), int(7e6), int(8e6), int(9e6),
-    # int(1e7), int(2e7), int(3e7), int(4e7), int(5e7), int(6e7), int(7e7), int(8e7), int(9e7),
-    # int(1.1e8), int(1.2e8), int(1.3e8), int(1.4e8), int(1.5e8), int(1.6e8), int(1.7e8), int(1.8e8), int(1.9e8), int(2.0e8),
+    int(1e5), int(2e5), int(3e5), int(4e5), int(5e5), int(6e5), int(7e5), int(8e5), int(9e5),
+    int(1e6), int(2e6), int(3e6), int(4e6), int(5e6), int(6e6), int(7e6), int(8e6), int(9e6),
+    int(1e7), int(2e7), int(3e7), int(4e7), int(5e7), int(6e7), int(7e7), int(8e7), int(9e7),
+    int(1.1e8), int(1.2e8), int(1.3e8), int(1.4e8), int(1.5e8), int(1.6e8), int(1.7e8), int(1.8e8), int(1.9e8), int(2.0e8),
     ])
 
 compute_file = 'data/compute_naive.json'
@@ -190,7 +186,8 @@ else:
         fd.write(json.dumps(perf, cls=tp.NpEncoder))
 
 
-fig, ax = plt.subplots(figsize=(6,4.24),dpi=150, constrained_layout=True)
+#fig, ax = plt.subplots(figsize=(6,4.24),dpi=150, constrained_layout=True)
+fig, ax = plt.subplots(figsize=(6,3.375),dpi=150, constrained_layout=True)
 ax = tp.timeit_plot2D(perf, ax, 'Indivíduos', 'Comparativo de performance')
 ax.set_xscale('log')
 
@@ -200,12 +197,9 @@ fig.savefig(filename, dpi=300)
 
 
 print("""
-
-
 #
 # EXPERIMENT 3: Results
 # 
-
 """)
 # Experiment 3
 #
