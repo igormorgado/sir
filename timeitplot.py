@@ -1,4 +1,5 @@
 import timeit
+import json
 from collections import defaultdict
 from itertools import product
 import heapq
@@ -132,9 +133,9 @@ def timeit_plot2D(data, axes=None, xlabel='xlabel', title='title', **kwargs):
     ax.set_title(title)
     ax.grid(True)
     if axes is None:
-        return ax
-    else:
         return fig
+    else:
+        return ax
 
 def timeit_heatmap(data, xlabel='xlabel', ylabel='ylabel', **kwargs):
     """Heatmap plot of timeit data, one chart per function. 
@@ -213,3 +214,14 @@ def substitute_titles(label, series):
         label = label.replace("{"+str(series)+"}", ordered_axes[0])
     return label
 
+
+class NpEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        else:
+            return super(NpEncoder, self).default(obj)

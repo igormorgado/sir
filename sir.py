@@ -62,20 +62,25 @@ def sir_sto_iter(population: int,
             number of infected population and number of recovered population (cannot be 
             infected anymore)
     """
+    if seed is not None:
+        random.seed(seed)
+
     t, s, i, r = 0, population-infected, infected, recovered
     yield (t, s, i, r)
-    
+
     # Numba complains
     # eps = np.finfo(float).eps
     eps = 1e-16
-    
+
     beta_normalized = infection_rate/population
     while True:
+        U0 = random.random()
+        U1 = random.random()
         beta_n_s = beta_normalized*s
         interevent_time = (beta_n_s*i) + (recovery_rate*i) + eps
-        t -= math.log(random.random())/interevent_time
+        t -= math.log(U0)/interevent_time
         prob = beta_n_s/(beta_n_s + recovery_rate)
-        if random.random() <= prob:
+        if U1 <= prob:
                 # Infected
                 s -= 1
                 i += 1
@@ -83,7 +88,7 @@ def sir_sto_iter(population: int,
                 # Recovered
                 i -= 1
                 r += 1
-        
+
         yield (t, s, i, r)
 
 
@@ -123,7 +128,8 @@ def sir_sto_simul(N: int,
     sir = sir_sto_iter(N, I_0, r_0, beta, gamma, seed)
     
     data = [next(sir)]
-    
+
+    if decimation == -1: decimation = int(N / 1000)
     # While there is simulation time and infecteds
     while (data[-1][0] < T) and (data[-1][2] > 0):
         for _ in range(decimation):
@@ -132,6 +138,63 @@ def sir_sto_simul(N: int,
     
     return np.array(data)
 
+
+@numba.njit
+def sir_sto_naive(N, I_0, r_0, beta, gamma, T, seed=None):
+    """SIR estochastic simulation (naive approach)
+    
+    Parameters:
+        N (int): Value of initial population
+        I_0 (int): Value of initial infected population
+        r_0 (int): Value of initial recovered population
+        beta (float): Rate of disease propagation. It's computed
+            as $\beta= c \cdot \rho$, where $c$ is the number of suscetible
+            individuals exposed to a infected individual and $\rho$ is the 
+            probability of infection given the contact.
+        gamma (float): Rate of recovery.
+        T (float): Time of simulation in days,
+        seed (int): A random seed value (default random).
+    Returns:
+        np.ndarray[time_evaluated (float), susceptible(float), infected(float), recovered(float)]:
+            Time evaluated since the start, number of susceptible in total population,
+            number of infected population and number of recovered population (cannot be 
+            infected anymore)
+    """
+    if seed is not None:
+        random.seed(seed)
+
+    t, s, i, r = [0], [N - I_0], [I_0], [r_0]
+    
+    j = 0
+    while i[j]>0 and t[j]<T:                             
+        U0 = random.random()                                        
+        U1 = random.random()
+        
+        alpha = (beta / N) * s[j] * i[j] + gamma * i[j]
+
+        # Interevent time
+        t.append(t[j] - math.log(U0)/alpha)                      
+
+        prob = (beta * s[j] / N) / (beta * s[j] / N + gamma)           
+        if U1 <= prob:
+            # Contagion
+            s.append(s[j] - 1)                               
+            i.append(i[j] + 1)
+            r.append(r[j])                                   
+        else:                                                
+            # Recovery
+            s.append(s[j])                                   
+            i.append(i[j] - 1)
+            r.append(r[j] + 1)
+
+        j = j + 1                                            
+    
+    #return np.array((t, s, i, r)).transpose()
+    return (t, s, i, r)
+
+
+def sir_sto_naive_nonumba(N, I_0, r_0, beta, gamma, T, seed=None):
+    return sir_sto_naive.py_func(N, I_0, r_0, beta, gamma, T, seed)
 
 def sir_det_iter(y: Tuple[float, float, float],
                  t: float,
@@ -177,70 +240,16 @@ def sir_det_simul(N: float,
     return np.concatenate((np.atleast_2d(t).transpose(), sol), axis=1)
 
 
-def SIR_stochastic(N, infectados, beta, gamma, tempo):
-    # SIR MIchelle // manter para historico
-    # Criando listas para o tempo e os compartimentos
-    t = [] 
-    s = []
-    i = []
-    r = []
-    
-    # Acrescenta-se a cada lista o valor inicial de cada compartimento e 
-    # também do instante inicial t = 0.
-    # No modelo SIR, considera-se que o compartimento de indíviduos 
-    # r(recuperados) = 0. Logo, a população total N é dividida entre os
-    # compartimentos s(suscetíveis) e i(infectados).
-    t.append(0)
-    s.append(N-infectados)
-    i.append(infectados)
-    r.append(0)
-    j = 0
-    # Enquanto houver indivíduos infectados na população e os instantes 
-    # de tempo avaliados sejam menores que o tempo total considerado
-    while i[j]>0 and t[j]<tempo:                             
-        # São utilizadas duas variáveis escolhidas aleatoriamente. 
-        # Uma para ser utilizada no interevent time e outra para 
-        # compararmos com a probabilidade de infecção estabelecida.
-        u1 = random()                                        
-        u2 = random()
-        
-        a = (beta/N)*s[j]*i[j] + gamma*i[j]
-        # fórmula para calcular o interevent time
-        t.append(t[j] - math.log(u1)/a)                      
 
-        # Quando comparamos a variável escolhida aleatoriamente com a 
-        #probabilidade de infecção, verifica-se que se u2 for menor ou 
-        # igual a prob significa que ...
-        
-        # probabilidade de infecção estabelecida.
-        prob = (beta*s[j]/N)/(beta*s[j]/N + gamma)           
-        if u2 <= prob:
-            # ... um indíviduo suscetível foi infectado. 
-            # Logo, há alteração nesses compartimentos.
-            s.append(s[j] - 1)                               
-            i.append(i[j] + 1)
-            # Enquanto que no compartimento de recuperados não há alteração.
-            r.append(r[j])                                   
-        else:                                                
-            # Se u2 for maior que essa prob significa que algum indíviduo
-            #infectado se recuperou. Logo, ...
-            
-            # ... não há alteração nos suscetíveis
-            s.append(s[j])                                   
-            # e há alteração nos infectados e recuperados.
-            i.append(i[j] - 1)
-            # e há alteração nos infectados e recuperados.
-            r.append(r[j] + 1)
-        # Faremos isso novamente para o próximo índice.
-        j = j + 1                                            
-    
-    return t, s, i, r
+def sir_write(data, filename):
+    """Write SIR data into filename.npz"""
+    np.savez(filename, tsir=data)
 
-def sir_write(filename):
-    pass
 
 def sir_read(filename):
-    pass
+    data = np.load(filename)
+    tsir = data['tsir']
+    return tsir
 
 
 def main():

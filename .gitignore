@@ -2,3 +2,5 @@
 pycache/
 olds/
 .ipynb_checkpoints/
+results.npz.bkp
+data/results.npz
