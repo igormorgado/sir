@@ -5,6 +5,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from memory_profiler import profile, memory_usage
 import timeitplot as tp
+import timeit
+
+# TODO:
+#   Diminuir altura das figuras
+
+# Clean up...
+plt.close('all')
 
 # Define formato de exibicao do numpy
 np.set_printoptions(suppress=True, precision=3)
@@ -125,7 +132,7 @@ experiments.append(resmem)
 
 filename = 'imgs/enmc_exp_memory_naive_and_simul.png'
 print(f"Salvando imagem do experimento 1 em {filename}")
-fig, ax = plt.subplots(1,1, figsize=(6,3.37), dpi=150, constrained_layout=True)
+fig, ax = plt.subplots(1,1, figsize=(6,3.), dpi=150, constrained_layout=True)
 ax.plot(experiments[0][:,0], experiments[0][:,1]/1000,'b-', markersize=2, alpha=.4, label='Regular');
 ax.plot(experiments[1][:,0], experiments[1][:,1]/1000,'r-', markersize=2, alpha=.4, label='Otimizado');
 ax.plot(experiments[0][:,0], experiments[0][:,1]/1000,'bo', markersize=2, alpha=.4);
@@ -186,11 +193,29 @@ else:
     with open(compute_file, 'w') as fd:
         fd.write(json.dumps(perf, cls=tp.NpEncoder))
 
+reg = np.array(perf['Regular'])
+oti = np.array(perf['Otimizado'])
+speedup = reg[:,1]/oti[:,1]
 
 #fig, ax = plt.subplots(figsize=(6,4.24),dpi=150, constrained_layout=True)
-fig, ax = plt.subplots(figsize=(6,3.375),dpi=150, constrained_layout=True)
-ax = tp.timeit_plot2D(perf, ax, 'Indivíduos', 'Comparativo de performance')
+fig, ax = plt.subplots(figsize=(6,3.),dpi=150, constrained_layout=True)
+ax = tp.timeit_plot2D(perf, ax, 'Indivíduos', '')
 ax.set_xscale('log')
+
+# Speedup axis
+ax2 = ax.twinx()
+ax2.plot(reg[:,0], speedup, 'g', alpha=.8, linewidth=1, label='Speedup')
+ax2.set_ylabel('Speedup', color='green')
+ax2.tick_params(axis='y', labelcolor='green')
+
+# Not working
+# import matplotlib.text as mtxt
+# import matplotlib.patches as mpatches
+# leg = ax.get_legend()
+# patch = mpatches.Patch(color='green', alpha=.8)
+# text = mtxt.Text(0, 0, 'Speedup')
+# leg.legendHandles.append(patch)
+# leg.texts.append(text)
 
 filename = f'imgs/enmc_exp_computing.png'
 print(f"Saving {filename}")
@@ -226,7 +251,7 @@ else:
     np.savez_compressed(results_file, expsto=expsto, expnai=expnai, expsto2=expsto2,
             args=(N, I_0, r_0, beta, gamma, T, dec, seed))
 
-fig, ax = plt.subplots(1, 1, figsize=(6,3.375), dpi=150, constrained_layout=True)
+fig, ax = plt.subplots(1, 1, figsize=(6,3.), dpi=150, constrained_layout=True)
 sir_plot(ax, expnai[::1000,:], label=['S(t) regular',' I(t) regular', 'R(t) regular'], dashed=True);
 sir_plot(ax, expsto, label=['S(t) otimizado',' I(t) otimizado', 'R(t) otimizado']);
 ax.plot(expsto[:,0], expsto[:,2], 'ro', markersize=2, alpha=.3)
@@ -263,3 +288,11 @@ filename = 'imgs/enmc_exp_results_inset_good_dec.png'
 print(f"Salvando imagem do experimento 3 em {filename}")
 fig.savefig(filename, dpi=300)
 
+
+
+# Experiment 4
+#
+# Speedup
+#expsto = sir_sto_simul(N, I_0, r_0, beta, gamma, T, dec, seed=seed)
+#expnai = sir_sto_naive(N, I_0, r_0, beta, gamma, T, seed=seed)
+# expnai = np.array(expnai).transpose()
